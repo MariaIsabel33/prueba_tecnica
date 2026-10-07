@@ -23,5 +23,8 @@ export const crearTarea = (t) =>
 export const cambiarDone = (id, done) =>
   request(`/api/tasks/${id}`, { method: 'PATCH', body: JSON.stringify({ done }) })
 
+export const editarTarea = (id, cambios) =>
+  request(`/api/tasks/${id}`, { method: 'PATCH', body: JSON.stringify(cambios) })
+
 export const eliminarTarea = (id) =>
   request(`/api/tasks/${id}`, { method: 'DELETE' })

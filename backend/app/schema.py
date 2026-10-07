@@ -6,5 +6,9 @@ class TaskIn(BaseModel):
     title: str = Field(min_length=1, max_length=120)
     priority: Literal["low", "medium", "high"] = "medium"
 
-class TaskDone(BaseModel):
-    done: bool
+class TaskUpdate(BaseModel):
+    model_config = ConfigDict(str_strip_whitespace=True)
+
+    title: str | None = Field(default=None, min_length=1, max_length=120)
+    priority: Literal["low", "medium", "high"] | None = None
+    done: bool | None = None

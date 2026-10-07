@@ -1,7 +1,7 @@
 from fastapi import FastAPI, HTTPException
 from psycopg import errors
 from .db import get_conn
-from .schema import TaskIn, TaskDone
+from .schema import TaskIn, TaskUpdate
 
 app = FastAPI()
 
@@ -52,17 +52,22 @@ def obtener(id: int):
     return item
 
 @app.patch("/api/tasks/{id}")
-def actualizar_tarea(id: int, cambios: TaskDone):
-    with get_conn() as conn:
-        actualizado = conn.execute(
-            """
-            UPDATE tasks
-            SET done = %s
-            WHERE id = %s
-            RETURNING *
-            """,
-            (cambios.done, id),
-        ).fetchone()
+def actualizar_tarea(id: int, cambios: TaskUpdate):
+    datos = cambios.model_dump(exclude_unset=True)
+    if not datos:
+        raise HTTPException(status_code=400, detail="No se enviaron campos para actualizar")
+
+    columnas = ", ".join(f"{campo} = %s" for campo in datos)
+    params = [*datos.values(), id]
+
+    try:
+        with get_conn() as conn:
+            actualizado = conn.execute(
+                f"UPDATE tasks SET {columnas} WHERE id = %s RETURNING *",
+                params,
+            ).fetchone()
+    except (errors.CheckViolation, errors.NotNullViolation):
+        raise HTTPException(status_code=400, detail="Los datos no cumplen las reglas")
     if actualizado is None:
         raise HTTPException(status_code=404, detail="Tarea no encontrada")
     return actualizado
