@@ -1,7 +1,7 @@
 from fastapi import FastAPI, HTTPException
 from psycopg import errors
 from .db import get_conn
-from .schemas import TaskIn, TaskDone
+from .schema import TaskIn, TaskDone
 
 app = FastAPI()
 
